@@ -1,0 +1,130 @@
+﻿@using Newtonsoft.Json
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<Demo_PRN231.Models.Product>
+@{
+	var jsonProduct = TempData["listP"];
+	var jsonP = TempData["product"];
+	List<Product> listPJson = jsonProduct != null ? JsonConvert.DeserializeObject<List<Product>>(jsonProduct.ToString()) : new List<Product>();
+	Product p = jsonP != null ? JsonConvert.DeserializeObject<Product>(jsonP.ToString()) : new Product();
+	List<Category> listCate = ViewBag.listCate;
+	List<Product> listP = jsonProduct != null ? listPJson : Model.ToList();
+	int selectedCategory = (int)(TempData["selectedCategoryId"] ?? 0);
+}
+
+<select id="select-cate" onchange="filterProduct()" class="form-select" style="width: 250px;">
+	<option value="0" selected="@(selectedCategory == 0 ? true : false)">ALL</option>
+	@foreach (var cate in listCate)
+	{
+		<option value="@cate.CategoryId" selected="@(selectedCategory == cate.CategoryId ? true : false)">@cate.CategoryName</option>
+	}
+</select>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>
+				@Html.DisplayNameFor(model => model.ProductId)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.ProductName)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.UnitPrice)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.UnitsInStock)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Image)
+			</th>
+			<th>
+				CategoryName
+			</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in listP)
+		{
+			<tr>
+				<td>
+					<a href="/Product/ProductDetails?id=@item.ProductId">@item.ProductId</a>
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.ProductName)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.UnitPrice)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.UnitsInStock)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Image)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Category.CategoryName)
+				</td>
+				<td>
+					<a href="/Product/Delete?id=@item.ProductId">Delete</a>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+<div>
+	<h1>Product Information</h1>
+	<form action="/Product/SaveProduct" method="post">
+		<div style="display: flex;">
+			<div>
+				<label class="form-label">ProductID</label>
+				<input class="form-control" type="text" name="pid" readonly style="width: 400px;" value="@(p.ProductId == 0 ? null : p.ProductId)"/>
+			</div>
+			<div style="padding-left: 50px;">
+				<label class="form-label">ProductName</label>
+				<input class="form-control" type="text" name="pname" style="width: 400px;" value="@p.ProductName"/>
+			</div>
+		</div>
+
+		<div style="display: flex;">
+			<div>
+				<label class="form-label">Unit Price</label>
+				<input class="form-control" type="text" name="price" style="width: 400px;" value="@p.UnitPrice"/>
+			</div>
+			<div style="padding-left: 50px;">
+				<label class="form-label">UnitsInStock</label>
+				<input class="form-control" type="text" name="stock" style="width: 400px;" value="@p.UnitsInStock"/>
+			</div>
+		</div>
+
+		<div style="display: flex;">
+			<div>
+				<label class="form-label">Image</label>
+				<input class="form-control" type="text" name="image" style="width: 400px;" value="@p.Image"/>
+			</div>
+			<div style="padding-left: 50px;">
+				<label class="form-label">Category Name</label>
+				<select id="select-cate-form" name="categoryId" class="form-select" style="width: 400px;">
+					@foreach (var cate in listCate)
+					{
+						<option value="@cate.CategoryId" selected="@(p.CategoryId == cate.CategoryId ? true : false)">@cate.CategoryName</option>
+					}
+				</select>
+			</div>
+		</div>
+		<button class="form-control" type="submit" style="align-items: center; width: 150px;">Save</button>
+	</form>
+</div>
+
+<script>
+	function filterProduct() {
+		let cate = document.getElementById("select-cate").value;
+		window.location.href = "/Product/FilterProducts?category=" + cate;
+	}
+</script>
